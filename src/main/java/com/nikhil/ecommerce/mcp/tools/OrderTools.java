@@ -1,7 +1,6 @@
 package com.nikhil.ecommerce.mcp.tools;
 
 import com.nikhil.ecommerce.mcp.ToolRegistry;
-import com.nikhil.ecommerce.model.Order;
 import com.nikhil.ecommerce.service.OrderService;
 import com.nikhil.ecommerce.service.ProductService;
 import org.springframework.stereotype.Component;
@@ -9,14 +8,14 @@ import org.springframework.stereotype.Component;
 import javax.annotation.PostConstruct;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
+
+import com.nikhil.ecommerce.dto.OrderResponseDTO;
 
 @Component
 public class OrderTools {
     private final OrderService orderService;
     private final ProductService productService;
     private final ToolRegistry registry;
-    private final Map<String, Order> orderCache = new ConcurrentHashMap<>();
 
     public OrderTools(OrderService orderService,
                       ProductService productService,
@@ -40,9 +39,7 @@ public class OrderTools {
             if (userId == null) {
                 throw new IllegalArgumentException("userId is required");
             }
-            Order order = orderService.createOrder(userId);
-            orderCache.put(String.valueOf(order.getOrderId()), order);
-            return order;
+            return orderService.createOrder(userId);
         }, new ToolRegistry.ToolMetadata("Create a new order", createSchema));
 
         Map<String, Object> addItemSchema = new HashMap<>();
@@ -55,13 +52,12 @@ public class OrderTools {
         addItemSchema.put("required", new String[]{"orderId", "productId", "quantity"});
 
         registry.register("addItem", args -> {
-            Order order = orderCache.get((String) args.get("orderId"));
-            orderService.addItem(
-                    String.valueOf(order.getOrderId()),
+            String orderId = (String) args.get("orderId");
+            return orderService.addItem(
+                    orderId,
                     (String) args.get("productId"),
                     Integer.parseInt(args.get("quantity").toString())
             );
-            return "Item added";
         }, new ToolRegistry.ToolMetadata("Add item to order", addItemSchema));
 
         Map<String, Object> checkoutSchema = new HashMap<>();
@@ -72,9 +68,8 @@ public class OrderTools {
         checkoutSchema.put("required", new String[]{"orderId"});
 
         registry.register("checkout", args -> {
-            Order order = orderCache.get((String) args.get("orderId"));
-            orderService.checkout(String.valueOf(order.getOrderId()));
-            return "Checkout successful!";
+            String orderId = (String) args.get("orderId");
+            return orderService.checkout(orderId);
         }, new ToolRegistry.ToolMetadata("Checkout order", checkoutSchema));
     }
 }

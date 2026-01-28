@@ -47,24 +47,16 @@ public class ProductTools {
         getSchema.put("required", new String[]{"productId"});
 
         registry.register("getProduct", args ->
-                productService.getProduct((Long) args.get("productId")),
+                productService.getProduct(Long.parseLong(args.get("productId").toString())),
                 new ToolRegistry.ToolMetadata("Get product by ID", getSchema));
 
         Map<String, Object> listSchema = new HashMap<>();
         listSchema.put("type", "object");
         listSchema.put("properties", new HashMap<>());
 
-        registry.register("getAllProducts", args -> {
-            return productService.getAllProductsInStock().stream()
-                    .map(p -> {
-                        Map<String, Object> productInfo = new HashMap<>();
-                        productInfo.put("productId", p.getProductId());
-                        productInfo.put("name", p.getName());
-                        productInfo.put("price", p.getPrice());
-                        return productInfo;
-                    })
-                    .collect(java.util.stream.Collectors.toList());
-        }, new ToolRegistry.ToolMetadata("Show all products that are in stock", listSchema));
+        registry.register("getAllProducts", args ->
+                productService.getAllProductsInStock(),
+                new ToolRegistry.ToolMetadata("Show all products that are in stock", listSchema));
 
         Map<String, Object> sellerSchema = new HashMap<>();
         sellerSchema.put("type", "object");
@@ -75,29 +67,12 @@ public class ProductTools {
 
         registry.register("getSellerProducts", args -> {
             String sellerId = (String) args.get("sellerId");
-            return productService.getProductsBySeller(sellerId).stream()
-                    .map(p -> {
-                        Map<String, Object> productInfo = new HashMap<>();
-                        productInfo.put("productId", p.getProductId());
-                        productInfo.put("name", p.getName());
-                        productInfo.put("price", p.getPrice());
-                        return productInfo;
-                    })
-                    .collect(java.util.stream.Collectors.toList());
+            return productService.getProductsBySeller(sellerId);
         }, new ToolRegistry.ToolMetadata("Show products for a specific seller", sellerSchema));
 
         registry.register("getMyInventory", args -> {
             String sellerId = (String) args.get("sellerId");
-            return productService.getSellerInventory(sellerId).stream()
-                    .map(p -> {
-                        Map<String, Object> productInfo = new HashMap<>();
-                        productInfo.put("productId", p.getProductId());
-                        productInfo.put("name", p.getName());
-                        productInfo.put("price", p.getPrice());
-                        productInfo.put("stock", p.getStock());
-                        return productInfo;
-                    })
-                    .collect(java.util.stream.Collectors.toList());
+            return productService.getSellerInventory(sellerId);
         }, new ToolRegistry.ToolMetadata("Show seller's own inventory with stock levels", sellerSchema));
     }
 }

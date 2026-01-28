@@ -1,6 +1,7 @@
 package com.nikhil.ecommerce.service;
 
 import com.nikhil.ecommerce.model.User;
+import com.nikhil.ecommerce.dto.UserResponseDTO;
 import com.nikhil.ecommerce.repository.UserRepository;
 import org.springframework.stereotype.Service;
 
@@ -13,13 +14,16 @@ public class UserService {
         this.userRepository = userRepository;
     }
 
-    public User createUser(String name, User.UserType type) {
+    public UserResponseDTO createUser(String name, User.UserType type) {
         User user = new User(name, type);
-        return userRepository.save(user);
+        User saved = userRepository.save(user);
+        return new UserResponseDTO(saved.getUserId(), saved.getName(), saved.getType().name());
     }
 
-    public User getUser(Long userId) {
-        return userRepository.findById(userId)
+    public UserResponseDTO getUser(Long userId) {
+        User user = userRepository.findById(userId)
                 .orElseThrow(() -> new IllegalArgumentException("User not found"));
+
+        return new UserResponseDTO(user.getUserId(), user.getName(), user.getType().name());
     }
 }
