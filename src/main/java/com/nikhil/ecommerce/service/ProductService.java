@@ -32,8 +32,7 @@ public class ProductService {
     }
 
     public java.util.List<ProductResponseDTO> getAllProductsInStock() {
-        return productRepository.findAll().stream()
-                .filter(p -> p.getStock() > 0)
+        return productRepository.findByStockGreaterThan(0).stream()
                 .map(p -> new ProductResponseDTO(
                         p.getProductId(),
                         p.getName(),
@@ -45,8 +44,8 @@ public class ProductService {
 
     public java.util.List<ProductResponseDTO> getProductsBySeller(String sellerId) {
         Long sid = Long.parseLong(sellerId);
-        return productRepository.findAll().stream()
-                .filter(p -> p.getSeller() != null && sid.equals(p.getSeller().getUserId()) && p.getStock() > 0)
+        return productRepository.findBySeller_UserId(sid).stream()
+                .filter(p -> p.getStock() > 0)
                 .map(p -> new ProductResponseDTO(
                         p.getProductId(),
                         p.getName(),
@@ -58,8 +57,7 @@ public class ProductService {
 
     public java.util.List<ProductResponseDTO> getSellerInventory(String sellerId) {
         Long sid = Long.parseLong(sellerId);
-        return productRepository.findAll().stream()
-                .filter(p -> p.getSeller() != null && sid.equals(p.getSeller().getUserId()))
+        return productRepository.findBySeller_UserId(sid).stream()
                 .map(p -> new ProductResponseDTO(
                         p.getProductId(),
                         p.getName(),
@@ -70,10 +68,7 @@ public class ProductService {
     }
 
     public Product findByName(String name) {
-        return productRepository.findAll().stream()
-                .filter(p -> p.getName().equalsIgnoreCase(name))
-                .findFirst()
-                .orElse(null);
+        return productRepository.findByNameIgnoreCase(name).orElse(null);
     }
 
     public Product createOrUpdateProduct(String name, double price, int stock, String sellerId) {
@@ -85,9 +80,25 @@ public class ProductService {
         }
         Product existing = findByName(name);
         if (existing != null) {
+            // Ownership validation: seller can only update their own product
+            if (existing.getSeller() == null || !existing.getSeller().getUserId().equals(sid)) {
+                throw new IllegalArgumentException("You can only update your own products");
+            }
+
             existing.addStock(stock);
-            return existing;
+            return productRepository.save(existing);
         }
         return createProduct(name, price, stock, sid);
+    }
+    public void deleteProduct(Long productId, Long sellerId) {
+        Product product = productRepository.findById(productId)
+                .orElseThrow(() -> new IllegalArgumentException("Product not found"));
+
+        // Ownership validation: seller can only delete their own product
+        if (product.getSeller() == null || !product.getSeller().getUserId().equals(sellerId)) {
+            throw new IllegalArgumentException("You can only delete your own products");
+        }
+
+        productRepository.delete(product);
     }
 }

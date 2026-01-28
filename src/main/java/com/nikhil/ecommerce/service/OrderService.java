@@ -54,12 +54,22 @@ public class OrderService {
     /**
      * Add product to an existing order
      */
-    public OrderResponseDTO addItem(String orderId, String productId, int quantity) {
+    public OrderResponseDTO addItem(String orderId, String buyerId, String productId, int quantity) {
         Long oid = Long.parseLong(orderId);
         Long pid = Long.parseLong(productId);
+        Long bid = Long.parseLong(buyerId);
 
         Order order = orderRepository.findById(oid)
                 .orElseThrow(() -> new IllegalArgumentException("Order not found"));
+        if (!order.getBuyerId().equals(bid)) {
+            throw new IllegalArgumentException("You can only add items to your own order");
+        }
+
+        User buyer = userRepository.findById(bid)
+                .orElseThrow(() -> new IllegalArgumentException("Buyer not found"));
+        if (buyer.getType() != User.UserType.BUYER) {
+            throw new IllegalArgumentException("Only BUYER can add items to orders");
+        }
 
         Product product = productRepository.findById(pid)
                 .orElseThrow(() -> new IllegalArgumentException("Product not found"));
@@ -87,15 +97,43 @@ public class OrderService {
     /**
      * Checkout an order
      */
-    public OrderResponseDTO checkout(String orderId) {
+    public OrderResponseDTO checkout(String orderId, String buyerId) {
         Long oid = Long.parseLong(orderId);
+        Long bid = Long.parseLong(buyerId);
 
         Order order = orderRepository.findById(oid)
                 .orElseThrow(() -> new IllegalArgumentException("Order not found"));
+        if (!order.getBuyerId().equals(bid)) {
+            throw new IllegalArgumentException("You can only checkout your own order");
+        }
+
+        User buyer = userRepository.findById(bid)
+                .orElseThrow(() -> new IllegalArgumentException("Buyer not found"));
+        if (buyer.getType() != User.UserType.BUYER) {
+            throw new IllegalArgumentException("Only BUYER can checkout orders");
+        }
 
         order.checkout();
         Order saved = orderRepository.save(order);
         return mapToDTO(saved);
+    }
+
+    /**
+     * Get all orders for a buyer (Order History)
+     */
+    public List<OrderResponseDTO> getOrdersByBuyer(String buyerId) {
+        Long bid = Long.parseLong(buyerId);
+
+        User buyer = userRepository.findById(bid)
+                .orElseThrow(() -> new IllegalArgumentException("Buyer not found"));
+
+        if (buyer.getType() != User.UserType.BUYER) {
+            throw new IllegalArgumentException("Only BUYER can view order history");
+        }
+
+        return orderRepository.findByBuyerId(bid).stream()
+                .map(this::mapToDTO)
+                .collect(Collectors.toList());
     }
 
     private OrderResponseDTO mapToDTO(Order order) {

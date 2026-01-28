@@ -74,5 +74,22 @@ public class ProductTools {
             String sellerId = (String) args.get("sellerId");
             return productService.getSellerInventory(sellerId);
         }, new ToolRegistry.ToolMetadata("Show seller's own inventory with stock levels", sellerSchema));
+
+        // Delete Product Tool
+        Map<String, Object> deleteSchema = new HashMap<>();
+        deleteSchema.put("type", "object");
+        Map<String, Object> deleteProps = new HashMap<>();
+        deleteProps.put("productId", new HashMap<String, Object>() {{ put("type", "string"); }});
+        deleteProps.put("sellerId", new HashMap<String, Object>() {{ put("type", "string"); }});
+        deleteSchema.put("properties", deleteProps);
+        deleteSchema.put("required", new String[]{"productId", "sellerId"});
+
+        registry.register("deleteProduct", args -> {
+            Long productId = Long.parseLong(args.get("productId").toString());
+            Long sellerId = Long.parseLong(args.get("sellerId").toString());
+
+            productService.deleteProduct(productId, sellerId);
+            return "Product deleted successfully";
+        }, new ToolRegistry.ToolMetadata("Delete a product (seller can only delete own products)", deleteSchema));
     }
 }

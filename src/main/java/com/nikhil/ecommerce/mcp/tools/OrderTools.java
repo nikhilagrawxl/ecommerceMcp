@@ -46,15 +46,23 @@ public class OrderTools {
         addItemSchema.put("type", "object");
         Map<String, Object> addItemProps = new HashMap<>();
         addItemProps.put("orderId", new HashMap<String, Object>() {{ put("type", "string"); }});
+        addItemProps.put("buyerId", new HashMap<String, Object>() {{ put("type", "string"); }});
         addItemProps.put("productId", new HashMap<String, Object>() {{ put("type", "string"); }});
         addItemProps.put("quantity", new HashMap<String, Object>() {{ put("type", "integer"); }});
         addItemSchema.put("properties", addItemProps);
-        addItemSchema.put("required", new String[]{"orderId", "productId", "quantity"});
+        addItemSchema.put("required", new String[]{"orderId", "buyerId", "productId", "quantity"});
 
         registry.register("addItem", args -> {
+            String buyerId = (String) args.get("buyerId");
+            if (buyerId == null || buyerId.trim().isEmpty()) {
+                throw new IllegalArgumentException(
+                        "buyerId is required for addItem. Example call: {orderId:'1', buyerId:'2', productId:'3', quantity:1}"
+                );
+            }
             String orderId = (String) args.get("orderId");
             return orderService.addItem(
                     orderId,
+                    buyerId,
                     (String) args.get("productId"),
                     Integer.parseInt(args.get("quantity").toString())
             );
@@ -64,12 +72,30 @@ public class OrderTools {
         checkoutSchema.put("type", "object");
         Map<String, Object> checkoutProps = new HashMap<>();
         checkoutProps.put("orderId", new HashMap<String, Object>() {{ put("type", "string"); }});
+        checkoutProps.put("buyerId", new HashMap<String, Object>() {{ put("type", "string"); }});
         checkoutSchema.put("properties", checkoutProps);
-        checkoutSchema.put("required", new String[]{"orderId"});
+        checkoutSchema.put("required", new String[]{"orderId", "buyerId"});
 
         registry.register("checkout", args -> {
             String orderId = (String) args.get("orderId");
-            return orderService.checkout(orderId);
+            String buyerId = (String) args.get("buyerId");
+            return orderService.checkout(orderId, buyerId);
         }, new ToolRegistry.ToolMetadata("Checkout order", checkoutSchema));
+
+        // Get Buyer Order History Tool
+        Map<String, Object> historySchema = new HashMap<>();
+        historySchema.put("type", "object");
+        Map<String, Object> historyProps = new HashMap<>();
+        historyProps.put("buyerId", new HashMap<String, Object>() {{ put("type", "string"); }});
+        historySchema.put("properties", historyProps);
+        historySchema.put("required", new String[]{"buyerId"});
+
+        registry.register("getMyOrders", args -> {
+            String buyerId = (String) args.get("buyerId");
+            if (buyerId == null) {
+                throw new IllegalArgumentException("buyerId is required");
+            }
+            return orderService.getOrdersByBuyer(buyerId);
+        }, new ToolRegistry.ToolMetadata("Get all orders for a buyer (order history)", historySchema));
     }
 }
