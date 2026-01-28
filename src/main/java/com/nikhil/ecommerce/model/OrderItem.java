@@ -10,8 +10,9 @@ public class OrderItem {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(nullable = false)
-    private Long productId;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "product_id", nullable = false)
+    private Product product;
 
     @Column(nullable = false)
     private int quantity;
@@ -26,11 +27,11 @@ public class OrderItem {
     // Required by JPA
     protected OrderItem() {}
 
-    public OrderItem(Long productId, int quantity, double price) {
+    public OrderItem(Product product, int quantity, double price) {
         if (quantity <= 0) {
             throw new IllegalArgumentException("Quantity must be > 0");
         }
-        this.productId = productId;
+        this.product = product;
         this.quantity = quantity;
         this.price = price;
     }
@@ -39,15 +40,27 @@ public class OrderItem {
         return price * quantity;
     }
 
-    public Long getProductId() {
-        return productId;
+    public Product getProduct() {
+        return product;
     }
 
     public int getQuantity() {
         return quantity;
     }
 
-    void setOrder(Order order) {
+    public void setOrder(Order order) {
         this.order = order;
+    }
+
+    public Long getId() {
+        return id;
+    }
+
+    public double getPrice() {
+        return price;
+    }
+
+    public Order getOrder() {
+        return order;
     }
 }

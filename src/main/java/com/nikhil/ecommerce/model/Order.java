@@ -3,6 +3,7 @@ package com.nikhil.ecommerce.model;
 import javax.persistence.*;
 import java.util.ArrayList;
 import java.util.List;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 
 @Entity
 @Table(name = "orders")
@@ -17,12 +18,13 @@ public class Order {
     private Long buyerId;
 
     @Column(name = "discount", nullable = false)
-    private double discount;
+    private double discount = 0.0;
 
     @Enumerated(EnumType.STRING)
     @Column(name = "status", nullable = false)
     private OrderStatus status;
 
+    @JsonIgnore
     @OneToMany(mappedBy = "order", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<OrderItem> items = new ArrayList<>();
 

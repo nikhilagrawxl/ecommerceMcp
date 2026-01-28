@@ -63,12 +63,13 @@ public class OrderService {
         product.reduceStock(quantity);
 
         OrderItem item = new OrderItem(
-                product.getProductId(),
+                product,
                 quantity,
                 product.getPrice()
         );
 
         order.addItem(item);
+        item.setOrder(order);
 
         productRepository.save(product);
         return orderRepository.save(order);

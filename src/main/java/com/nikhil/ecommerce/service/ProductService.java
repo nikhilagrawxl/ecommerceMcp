@@ -20,7 +20,7 @@ public class ProductService {
         if (seller.getType() != User.UserType.SELLER) {
             throw new IllegalArgumentException("Only sellers can add products");
         }
-        Product product = new Product(name, price, stock, sellerId);
+        Product product = new Product(name, price, stock, seller);
         return productRepository.save(product);
     }
 
@@ -38,14 +38,14 @@ public class ProductService {
     public java.util.List<Product> getProductsBySeller(String sellerId) {
         Long sid = Long.parseLong(sellerId);
         return productRepository.findAll().stream()
-                .filter(p -> sid.equals(p.getSellerId()) && p.getStock() > 0)
+                .filter(p -> p.getSeller() != null && sid.equals(p.getSeller().getUserId()) && p.getStock() > 0)
                 .collect(java.util.stream.Collectors.toList());
     }
 
     public java.util.List<Product> getSellerInventory(String sellerId) {
         Long sid = Long.parseLong(sellerId);
         return productRepository.findAll().stream()
-                .filter(p -> sid.equals(p.getSellerId()))
+                .filter(p -> p.getSeller() != null && sid.equals(p.getSeller().getUserId()))
                 .collect(java.util.stream.Collectors.toList());
     }
 

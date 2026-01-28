@@ -19,17 +19,19 @@ public class Product {
     @Column(nullable = false)
     private int stock;
 
-    private Long sellerId;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "seller_id", nullable = false)
+    private User seller;
 
     // Required by JPA
     protected Product() {
     }
 
-    public Product(String name, double price, int stock, Long sellerId) {
+    public Product(String name, double price, int stock, User seller) {
         this.name = name;
         this.price = price;
         this.stock = stock;
-        this.sellerId = sellerId;
+        this.seller = seller;
     }
 
     public Long getProductId() {
@@ -59,11 +61,11 @@ public class Product {
         this.stock += qty;
     }
 
-    public Long getSellerId() {
-        return sellerId;
+    public User getSeller() {
+        return seller;
     }
 
-    public void setSellerId(Long sellerId) {
-        this.sellerId = sellerId;
+    public void setSeller(User seller) {
+        this.seller = seller;
     }
 }
