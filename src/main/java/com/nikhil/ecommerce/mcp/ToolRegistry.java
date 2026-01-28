@@ -2,6 +2,8 @@ package com.nikhil.ecommerce.mcp;
 
 import org.springframework.stereotype.Component;
 
+import com.nikhil.ecommerce.dto.ErrorResponseDTO;
+
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -33,9 +35,15 @@ public class ToolRegistry {
     public Object execute(String name, Map<String, Object> args) {
         Function<Map<String, Object>, Object> handler = tools.get(name);
         if (handler == null) {
-            throw new IllegalArgumentException("Tool not found: " + name);
+            return new ErrorResponseDTO("Tool not found: " + name);
         }
-        return handler.apply(args);
+
+        try {
+            return handler.apply(args);
+        } catch (Exception ex) {
+            // Return clean error message to Claude instead of stack trace
+            return new ErrorResponseDTO(ex.getMessage());
+        }
     }
 
     public List<Map<String, Object>> getToolsMetadata() {

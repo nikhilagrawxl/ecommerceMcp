@@ -16,6 +16,10 @@ import com.nikhil.ecommerce.dto.OrderResponseDTO;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import com.nikhil.ecommerce.exception.BadRequestException;
+import com.nikhil.ecommerce.exception.NotFoundException;
+import com.nikhil.ecommerce.exception.UnauthorizedException;
+
 @Service
 @Transactional
 public class OrderService {
@@ -41,9 +45,9 @@ public class OrderService {
         Long buyerId = Long.parseLong(userId);
 
         User user = userRepository.findById(buyerId)
-                .orElseThrow(() -> new IllegalArgumentException("User not found"));
+                .orElseThrow(() -> new NotFoundException("User not found"));
         if (user.getType() != User.UserType.BUYER) {
-            throw new IllegalArgumentException("Only BUYER can create orders");
+            throw new UnauthorizedException("Only BUYER can create orders");
         }
 
         Order order = new Order(buyerId);
@@ -60,22 +64,22 @@ public class OrderService {
         Long bid = Long.parseLong(buyerId);
 
         Order order = orderRepository.findById(oid)
-                .orElseThrow(() -> new IllegalArgumentException("Order not found"));
+                .orElseThrow(() -> new NotFoundException("Order not found"));
         if (!order.getBuyerId().equals(bid)) {
-            throw new IllegalArgumentException("You can only add items to your own order");
+            throw new UnauthorizedException("You can only add items to your own order");
         }
 
         User buyer = userRepository.findById(bid)
-                .orElseThrow(() -> new IllegalArgumentException("Buyer not found"));
+                .orElseThrow(() -> new NotFoundException("Buyer not found"));
         if (buyer.getType() != User.UserType.BUYER) {
-            throw new IllegalArgumentException("Only BUYER can add items to orders");
+            throw new UnauthorizedException("Only BUYER can add items to orders");
         }
 
         Product product = productRepository.findById(pid)
-                .orElseThrow(() -> new IllegalArgumentException("Product not found"));
+                .orElseThrow(() -> new NotFoundException("Product not found"));
 
         if (product.getStock() < quantity) {
-            throw new IllegalArgumentException("Insufficient stock");
+            throw new BadRequestException("Insufficient stock");
         }
 
         product.reduceStock(quantity);
@@ -102,15 +106,15 @@ public class OrderService {
         Long bid = Long.parseLong(buyerId);
 
         Order order = orderRepository.findById(oid)
-                .orElseThrow(() -> new IllegalArgumentException("Order not found"));
+                .orElseThrow(() -> new NotFoundException("Order not found"));
         if (!order.getBuyerId().equals(bid)) {
-            throw new IllegalArgumentException("You can only checkout your own order");
+            throw new UnauthorizedException("You can only checkout your own order");
         }
 
         User buyer = userRepository.findById(bid)
-                .orElseThrow(() -> new IllegalArgumentException("Buyer not found"));
+                .orElseThrow(() -> new NotFoundException("Buyer not found"));
         if (buyer.getType() != User.UserType.BUYER) {
-            throw new IllegalArgumentException("Only BUYER can checkout orders");
+            throw new UnauthorizedException("Only BUYER can checkout orders");
         }
 
         order.checkout();
@@ -125,10 +129,10 @@ public class OrderService {
         Long bid = Long.parseLong(buyerId);
 
         User buyer = userRepository.findById(bid)
-                .orElseThrow(() -> new IllegalArgumentException("Buyer not found"));
+                .orElseThrow(() -> new NotFoundException("Buyer not found"));
 
         if (buyer.getType() != User.UserType.BUYER) {
-            throw new IllegalArgumentException("Only BUYER can view order history");
+            throw new UnauthorizedException("Only BUYER can view order history");
         }
 
         return orderRepository.findByBuyerId(bid).stream()

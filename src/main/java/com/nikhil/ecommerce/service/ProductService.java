@@ -7,6 +7,10 @@ import com.nikhil.ecommerce.repository.ProductRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import com.nikhil.ecommerce.exception.BadRequestException;
+import com.nikhil.ecommerce.exception.NotFoundException;
+import com.nikhil.ecommerce.exception.UnauthorizedException;
+
 @Service
 public class ProductService {
 
@@ -18,9 +22,9 @@ public class ProductService {
 
     public Product createProduct(String name, double price, int stock, Long sellerId) {
         User seller = userRepository.findById(sellerId)
-                .orElseThrow(() -> new IllegalArgumentException("User not found"));
+                .orElseThrow(() -> new NotFoundException("User not found"));
         if (seller.getType() != User.UserType.SELLER) {
-            throw new IllegalArgumentException("Only sellers can add products");
+            throw new UnauthorizedException("Only sellers can add products");
         }
         Product product = new Product(name, price, stock, seller);
         return productRepository.save(product);
@@ -28,7 +32,7 @@ public class ProductService {
 
     public Product getProduct(Long productId) {
         return productRepository.findById(productId)
-                .orElseThrow(() -> new RuntimeException("Product not found"));
+                .orElseThrow(() -> new NotFoundException("Product not found"));
     }
 
     public java.util.List<ProductResponseDTO> getAllProductsInStock() {
@@ -74,15 +78,15 @@ public class ProductService {
     public Product createOrUpdateProduct(String name, double price, int stock, String sellerId) {
         Long sid = Long.parseLong(sellerId);
         User seller = userRepository.findById(sid)
-                .orElseThrow(() -> new IllegalArgumentException("User not found"));
+                .orElseThrow(() -> new NotFoundException("User not found"));
         if (seller.getType() != User.UserType.SELLER) {
-            throw new IllegalArgumentException("Only sellers can add products");
+            throw new UnauthorizedException("Only sellers can add products");
         }
         Product existing = findByName(name);
         if (existing != null) {
             // Ownership validation: seller can only update their own product
             if (existing.getSeller() == null || !existing.getSeller().getUserId().equals(sid)) {
-                throw new IllegalArgumentException("You can only update your own products");
+                throw new UnauthorizedException("You can only update your own products");
             }
 
             existing.addStock(stock);
@@ -92,22 +96,22 @@ public class ProductService {
     }
     public void deleteProduct(Long productId, Long sellerId) {
         Product product = productRepository.findById(productId)
-                .orElseThrow(() -> new IllegalArgumentException("Product not found"));
+                .orElseThrow(() -> new NotFoundException("Product not found"));
 
         // Ownership validation: seller can only delete their own product
         if (product.getSeller() == null || !product.getSeller().getUserId().equals(sellerId)) {
-            throw new IllegalArgumentException("You can only delete your own products");
+            throw new UnauthorizedException("You can only delete your own products");
         }
 
         productRepository.delete(product);
     }
     public ProductResponseDTO updateStock(Long productId, Long sellerId, int newStock) {
         Product product = productRepository.findById(productId)
-                .orElseThrow(() -> new IllegalArgumentException("Product not found"));
+                .orElseThrow(() -> new NotFoundException("Product not found"));
 
         // Ownership validation
         if (product.getSeller() == null || !product.getSeller().getUserId().equals(sellerId)) {
-            throw new IllegalArgumentException("You can only update your own products");
+            throw new UnauthorizedException("You can only update your own products");
         }
 
         product.setStock(newStock);
@@ -123,11 +127,11 @@ public class ProductService {
 
     public ProductResponseDTO updatePrice(Long productId, Long sellerId, double newPrice) {
         Product product = productRepository.findById(productId)
-                .orElseThrow(() -> new IllegalArgumentException("Product not found"));
+                .orElseThrow(() -> new NotFoundException("Product not found"));
 
         // Ownership validation
         if (product.getSeller() == null || !product.getSeller().getUserId().equals(sellerId)) {
-            throw new IllegalArgumentException("You can only update your own products");
+            throw new UnauthorizedException("You can only update your own products");
         }
 
         product.setPrice(newPrice);
