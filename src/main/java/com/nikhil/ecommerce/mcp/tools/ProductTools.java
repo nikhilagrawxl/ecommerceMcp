@@ -47,7 +47,7 @@ public class ProductTools {
         getSchema.put("required", new String[]{"productId"});
 
         registry.register("getProduct", args ->
-                productService.getProduct((String) args.get("productId")),
+                productService.getProduct((Long) args.get("productId")),
                 new ToolRegistry.ToolMetadata("Get product by ID", getSchema));
 
         Map<String, Object> listSchema = new HashMap<>();

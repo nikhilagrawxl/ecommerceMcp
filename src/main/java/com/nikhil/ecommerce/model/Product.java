@@ -1,28 +1,38 @@
 package com.nikhil.ecommerce.model;
 
-public class Product {
-    private final String productId;
-    private final String name;
-    private final double price;
-    private int stock;
-    private String sellerId;
+import javax.persistence.*;
 
-    public Product(String productId, String name, double price, int stock) {
-        this.productId = productId;
-        this.name = name;
-        this.price = price;
-        this.stock = stock;
+@Entity
+@Table(name = "products")
+public class Product {
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long productId;
+
+    @Column(nullable = false)
+    private String name;
+
+    @Column(nullable = false)
+    private double price;
+
+    @Column(nullable = false)
+    private int stock;
+
+    private Long sellerId;
+
+    // Required by JPA
+    protected Product() {
     }
 
-    public Product(String productId, String name, double price, int stock, String sellerId) {
-        this.productId = productId;
+    public Product(String name, double price, int stock, Long sellerId) {
         this.name = name;
         this.price = price;
         this.stock = stock;
         this.sellerId = sellerId;
     }
 
-    public String getProductId() {
+    public Long getProductId() {
         return productId;
     }
 
@@ -49,11 +59,11 @@ public class Product {
         this.stock += qty;
     }
 
-    public String getSellerId() {
+    public Long getSellerId() {
         return sellerId;
     }
 
-    public void setSellerId(String sellerId) {
+    public void setSellerId(Long sellerId) {
         this.sellerId = sellerId;
     }
 }

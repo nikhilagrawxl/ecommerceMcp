@@ -41,7 +41,7 @@ public class OrderTools {
                 throw new IllegalArgumentException("userId is required");
             }
             Order order = orderService.createOrder(userId);
-            orderCache.put(order.getOrderId(), order);
+            orderCache.put(String.valueOf(order.getOrderId()), order);
             return order;
         }, new ToolRegistry.ToolMetadata("Create a new order", createSchema));
 
@@ -57,8 +57,8 @@ public class OrderTools {
         registry.register("addItem", args -> {
             Order order = orderCache.get((String) args.get("orderId"));
             orderService.addItem(
-                    order,
-                    productService.getProduct((String) args.get("productId")),
+                    String.valueOf(order.getOrderId()),
+                    (String) args.get("productId"),
                     Integer.parseInt(args.get("quantity").toString())
             );
             return "Item added";
@@ -73,7 +73,8 @@ public class OrderTools {
 
         registry.register("checkout", args -> {
             Order order = orderCache.get((String) args.get("orderId"));
-            return orderService.checkout(order);
+            orderService.checkout(String.valueOf(order.getOrderId()));
+            return "Checkout successful!";
         }, new ToolRegistry.ToolMetadata("Checkout order", checkoutSchema));
     }
 }

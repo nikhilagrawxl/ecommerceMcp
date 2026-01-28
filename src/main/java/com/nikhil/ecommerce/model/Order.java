@@ -1,25 +1,41 @@
 package com.nikhil.ecommerce.model;
 
+import javax.persistence.*;
 import java.util.ArrayList;
 import java.util.List;
 
+@Entity
+@Table(name = "orders")
 public class Order {
-    private final String orderId;
-    private final List<OrderItem> items = new ArrayList<>();
-    private double discount; // percentage
-    private String buyerId;
 
-    public Order(String orderId) {
-        this.orderId = orderId;
-    }
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "order_id")
+    private Long orderId;
 
-    public Order(String orderId, String buyerId) {
-        this.orderId = orderId;
+    @Column(name = "buyer_id", nullable = false)
+    private Long buyerId;
+
+    @Column(name = "discount", nullable = false)
+    private double discount;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "status", nullable = false)
+    private OrderStatus status;
+
+    @OneToMany(mappedBy = "order", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<OrderItem> items = new ArrayList<>();
+
+    protected Order() {}
+
+    public Order(Long buyerId) {
         this.buyerId = buyerId;
+        this.status = OrderStatus.CREATED;
     }
 
     public void addItem(OrderItem item) {
         items.add(item);
+        item.setOrder(this);
     }
 
     public void applyDiscount(double discount) {
@@ -30,23 +46,26 @@ public class Order {
         double total = items.stream()
                 .mapToDouble(OrderItem::getTotalPrice)
                 .sum();
-
         return total - (total * discount / 100);
+    }
+
+    public Long getOrderId() {
+        return orderId;
+    }
+
+    public Long getBuyerId() {
+        return buyerId;
     }
 
     public List<OrderItem> getItems() {
         return items;
     }
 
-    public String getOrderId() {
-        return orderId;
+    public OrderStatus getStatus() {
+        return status;
     }
 
-    public String getBuyerId() {
-        return buyerId;
-    }
-
-    public void setBuyerId(String buyerId) {
-        this.buyerId = buyerId;
+    public void checkout() {
+        this.status = OrderStatus.CHECKED_OUT;
     }
 }

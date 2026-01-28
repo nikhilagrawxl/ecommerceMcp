@@ -4,31 +4,86 @@ import com.nikhil.ecommerce.model.Order;
 import com.nikhil.ecommerce.model.OrderItem;
 import com.nikhil.ecommerce.model.Product;
 import com.nikhil.ecommerce.model.User;
-import org.springframework.beans.factory.annotation.Autowired;
+import com.nikhil.ecommerce.repository.OrderRepository;
+import com.nikhil.ecommerce.repository.ProductRepository;
 import org.springframework.stereotype.Service;
 
+import javax.transaction.Transactional;
+
 @Service
+@Transactional
 public class OrderService {
-    private int nextId = 1;
-    
-    @Autowired
-    private UserService userService;
 
+    private final OrderRepository orderRepository;
+    private final ProductRepository productRepository;
+    private final UserService userService;
+
+    public OrderService(
+            OrderRepository orderRepository,
+            ProductRepository productRepository,
+            UserService userService
+    ) {
+        this.orderRepository = orderRepository;
+        this.productRepository = productRepository;
+        this.userService = userService;
+    }
+
+    /**
+     * Create a new order for a buyer
+     */
     public Order createOrder(String userId) {
-        User user = userService.getUser(userId);
-        if (user.getType() != User.UserType.BUYER && user.getType() != User.UserType.SELLER) {
-            throw new IllegalArgumentException("Invalid user type for order creation");
+        Long buyerId = Long.parseLong(userId);
+
+        User user = userService.getUser(buyerId);
+        if (user.getType() != User.UserType.BUYER) {
+            throw new IllegalArgumentException("Only BUYER can create orders");
         }
-        String orderId = String.valueOf(nextId++);
-        return new Order(orderId, userId);
+
+        Order order = new Order(buyerId);
+        return orderRepository.save(order);
     }
 
-    public void addItem(Order order, Product product, int qty) {
-        product.reduceStock(qty);
-        order.addItem(new OrderItem(product, qty));
+    /**
+     * Add product to an existing order
+     */
+    public Order addItem(String orderId, String productId, int quantity) {
+        Long oid = Long.parseLong(orderId);
+        Long pid = Long.parseLong(productId);
+
+        Order order = orderRepository.findById(oid)
+                .orElseThrow(() -> new IllegalArgumentException("Order not found"));
+
+        Product product = productRepository.findById(pid)
+                .orElseThrow(() -> new IllegalArgumentException("Product not found"));
+
+        if (product.getStock() < quantity) {
+            throw new IllegalArgumentException("Insufficient stock");
+        }
+
+        product.reduceStock(quantity);
+
+        OrderItem item = new OrderItem(
+                product.getProductId(),
+                quantity,
+                product.getPrice()
+        );
+
+        order.addItem(item);
+
+        productRepository.save(product);
+        return orderRepository.save(order);
     }
 
-    public double checkout(Order order) {
-        return order.calculateTotal();
+    /**
+     * Checkout an order
+     */
+    public Order checkout(String orderId) {
+        Long oid = Long.parseLong(orderId);
+
+        Order order = orderRepository.findById(oid)
+                .orElseThrow(() -> new IllegalArgumentException("Order not found"));
+
+        order.checkout();
+        return orderRepository.save(order);
     }
 }

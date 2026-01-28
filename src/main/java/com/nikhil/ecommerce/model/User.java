@@ -1,17 +1,30 @@
 package com.nikhil.ecommerce.model;
 
-public class User {
-    private final String userId;
-    private final String name;
-    private final UserType type;
+import javax.persistence.*;
 
-    public User(String userId, String name, UserType type) {
-        this.userId = userId;
+@Entity
+@Table(name = "users")
+public class User {
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long userId;
+
+    @Column(nullable = false)
+    private String name;
+
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    private UserType type;
+
+    protected User() {
+    }
+
+    public User(String name, UserType type) {
         this.name = name;
         this.type = type;
     }
 
-    public String getUserId() {
+    public Long getUserId() {
         return userId;
     }
 

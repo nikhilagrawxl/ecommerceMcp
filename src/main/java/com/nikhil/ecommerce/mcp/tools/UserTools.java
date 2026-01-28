@@ -46,7 +46,7 @@ public class UserTools {
         getSchema.put("required", new String[]{"userId"});
 
         registry.register("getUser", args ->
-                userService.getUser((String) args.get("userId")),
+                userService.getUser(Long.parseLong((String) args.get("userId"))),
                 new ToolRegistry.ToolMetadata("Get user by ID", getSchema));
     }
 }
