@@ -1,5 +1,3 @@
-
-
 # 📦 Ecommerce MCP Server (Java + Spring Boot + PostgreSQL)
 
 A basic **E-commerce backend system** built using **Java + Spring Boot + JPA + PostgreSQL**, exposed as an **MCP (Model Context Protocol) Server** that can be connected directly with **Claude AI**.
@@ -91,18 +89,32 @@ cd ecommerceMcp
 
 ---
 
-## 2️⃣ Setup PostgreSQL Database
+## 2️⃣ Setup PostgreSQL Database (Docker Recommended)
 
-Login into PostgreSQL:
+This project uses PostgreSQL for persistence. The easiest way to run PostgreSQL locally is with Docker.
+
+### Start PostgreSQL with Docker
 
 ```bash
-psql -U postgres
+docker compose up -d
 ```
 
-Create database:
+This will start PostgreSQL at:
 
-```sql
-CREATE DATABASE ecommerce_db;
+- Host: `localhost`
+- Port: `5432`
+- Database: `ecommerce_db`
+
+### Stop PostgreSQL
+
+```bash
+docker compose down
+```
+
+You can also connect inside the container:
+
+```bash
+docker exec -it ecommerce_postgres psql -U postgres -d ecommerce_db
 ```
 
 ---
@@ -137,6 +149,8 @@ target/ecommerce-0.0.1-SNAPSHOT.jar
 ---
 
 ## 5️⃣ Run MCP Server Locally
+
+Claude Desktop will spawn this jar automatically, but you can run it manually for debugging.
 
 Start the MCP server:
 
@@ -292,10 +306,10 @@ Tool: `getMyOrders`
 
 ## 📌 Future Improvements
 
-- Update stock + price tools
-- Cart system
-- JWT Authentication
-- Docker deployment
+- Cart checkout flow (Amazon-like)
+- JWT Authentication (token-based buyer/seller identity)
+- Better tool schemas + validation
+- Deployment (Render/Railway)
 - Payment simulation
 
 ---
