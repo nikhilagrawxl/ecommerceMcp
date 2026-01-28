@@ -91,5 +91,42 @@ public class ProductTools {
             productService.deleteProduct(productId, sellerId);
             return "Product deleted successfully";
         }, new ToolRegistry.ToolMetadata("Delete a product (seller can only delete own products)", deleteSchema));
+
+        // Update Stock Tool
+        Map<String, Object> stockSchema = new HashMap<>();
+        stockSchema.put("type", "object");
+        Map<String, Object> stockProps = new HashMap<>();
+        stockProps.put("productId", new HashMap<String, Object>() {{ put("type", "string"); }});
+        stockProps.put("sellerId", new HashMap<String, Object>() {{ put("type", "string"); }});
+        stockProps.put("stock", new HashMap<String, Object>() {{ put("type", "integer"); }});
+        stockSchema.put("properties", stockProps);
+        stockSchema.put("required", new String[]{"productId", "sellerId", "stock"});
+
+        registry.register("updateStock", args -> {
+            Long productId = Long.parseLong(args.get("productId").toString());
+            Long sellerId = Long.parseLong(args.get("sellerId").toString());
+            int stock = Integer.parseInt(args.get("stock").toString());
+
+            return productService.updateStock(productId, sellerId, stock);
+        }, new ToolRegistry.ToolMetadata("Update stock of a product (seller-only)", stockSchema));
+
+
+        // Update Price Tool
+        Map<String, Object> priceSchema = new HashMap<>();
+        priceSchema.put("type", "object");
+        Map<String, Object> priceProps = new HashMap<>();
+        priceProps.put("productId", new HashMap<String, Object>() {{ put("type", "string"); }});
+        priceProps.put("sellerId", new HashMap<String, Object>() {{ put("type", "string"); }});
+        priceProps.put("price", new HashMap<String, Object>() {{ put("type", "number"); }});
+        priceSchema.put("properties", priceProps);
+        priceSchema.put("required", new String[]{"productId", "sellerId", "price"});
+
+        registry.register("updatePrice", args -> {
+            Long productId = Long.parseLong(args.get("productId").toString());
+            Long sellerId = Long.parseLong(args.get("sellerId").toString());
+            double price = Double.parseDouble(args.get("price").toString());
+
+            return productService.updatePrice(productId, sellerId, price);
+        }, new ToolRegistry.ToolMetadata("Update price of a product (seller-only)", priceSchema));
     }
 }

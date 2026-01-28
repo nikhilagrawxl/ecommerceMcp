@@ -136,7 +136,7 @@ public class OrderService {
                 .collect(Collectors.toList());
     }
 
-    private OrderResponseDTO mapToDTO(Order order) {
+    public OrderResponseDTO mapToDTO(Order order) {
         List<OrderItemResponseDTO> itemDTOs = order.getItems().stream()
                 .map(i -> new OrderItemResponseDTO(
                         i.getProduct().getProductId(),

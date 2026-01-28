@@ -50,6 +50,20 @@ public class Product {
         return stock;
     }
 
+    public void setStock(int stock) {
+        if (stock < 0) {
+            throw new IllegalArgumentException("Stock cannot be negative");
+        }
+        this.stock = stock;
+    }
+
+    public void setPrice(double price) {
+        if (price < 0) {
+            throw new IllegalArgumentException("Price cannot be negative");
+        }
+        this.price = price;
+    }
+
     public void reduceStock(int qty) {
         if (qty > stock) {
             throw new IllegalArgumentException("Insufficient stock");

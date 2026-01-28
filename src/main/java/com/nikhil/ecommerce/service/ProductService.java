@@ -101,4 +101,43 @@ public class ProductService {
 
         productRepository.delete(product);
     }
+    public ProductResponseDTO updateStock(Long productId, Long sellerId, int newStock) {
+        Product product = productRepository.findById(productId)
+                .orElseThrow(() -> new IllegalArgumentException("Product not found"));
+
+        // Ownership validation
+        if (product.getSeller() == null || !product.getSeller().getUserId().equals(sellerId)) {
+            throw new IllegalArgumentException("You can only update your own products");
+        }
+
+        product.setStock(newStock);
+        Product saved = productRepository.save(product);
+
+        return new ProductResponseDTO(
+                saved.getProductId(),
+                saved.getName(),
+                saved.getPrice(),
+                saved.getStock()
+        );
+    }
+
+    public ProductResponseDTO updatePrice(Long productId, Long sellerId, double newPrice) {
+        Product product = productRepository.findById(productId)
+                .orElseThrow(() -> new IllegalArgumentException("Product not found"));
+
+        // Ownership validation
+        if (product.getSeller() == null || !product.getSeller().getUserId().equals(sellerId)) {
+            throw new IllegalArgumentException("You can only update your own products");
+        }
+
+        product.setPrice(newPrice);
+        Product saved = productRepository.save(product);
+
+        return new ProductResponseDTO(
+                saved.getProductId(),
+                saved.getName(),
+                saved.getPrice(),
+                saved.getStock()
+        );
+    }
 }
