@@ -1,6 +1,5 @@
 package com.nikhil.ecommerce.exception;
 
-
 import com.nikhil.ecommerce.dto.ErrorResponseDTO;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -27,6 +26,15 @@ public class GlobalExceptionHandler {
         return ResponseEntity
                 .status(400)
                 .body(new ErrorResponseDTO(ex.getMessage()));
+    }
+
+    // WebFlux 404 handler
+    @ExceptionHandler(org.springframework.web.reactive.resource.NoResourceFoundException.class)
+    public ResponseEntity<ErrorResponseDTO> handleNoResourceFound(
+            org.springframework.web.reactive.resource.NoResourceFoundException ex) {
+        return ResponseEntity
+                .status(404)
+                .body(new ErrorResponseDTO("Not Found: " + ex.getMessage()));
     }
 
     // fallback
