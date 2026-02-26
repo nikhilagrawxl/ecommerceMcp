@@ -1,7 +1,7 @@
 # ============================
-# 1. Build Stage (Java 8)
+# 1. Build Stage (Java 17)
 # ============================
-FROM maven:3.8.6-openjdk-8 AS build
+FROM maven:3.9-eclipse-temurin-17 AS build
 
 WORKDIR /app
 
@@ -14,9 +14,9 @@ RUN mvn clean package -DskipTests
 
 
 # ============================
-# 2. Runtime Stage (Java 8)
+# 2. Runtime Stage (Java 17)
 # ============================
-FROM eclipse-temurin:8-jre
+FROM eclipse-temurin:17-jre
 
 WORKDIR /app
 

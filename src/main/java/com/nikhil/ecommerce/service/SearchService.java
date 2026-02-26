@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.nikhil.ecommerce.dto.SearchCategoryDTO;
 import com.nikhil.ecommerce.dto.SearchProductDTO;
 import com.nikhil.ecommerce.dto.SearchResultDTO;
+import org.springframework.ai.tool.annotation.Tool;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponentsBuilder;
@@ -20,6 +21,7 @@ public class SearchService {
     private final RestTemplate restTemplate = new RestTemplate();
     private final ObjectMapper objectMapper = new ObjectMapper();
 
+    @Tool(description = "Search the catalog for an exact or partial match of a keyword to get search results including matching categories and top products.")
     public SearchResultDTO getSearchResults(String keyword) {
         String url = UriComponentsBuilder.fromHttpUrl(BASE_URL)
                 .queryParam("keyword", keyword)

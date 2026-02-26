@@ -16,15 +16,6 @@ spec:
         - name: ecommerce-mcp
           image: ecommerce-mcp:local
           imagePullPolicy: IfNotPresent
-          env:
-            - name: MCP_STDIO_ENABLED
-              value: "false"
-            - name: SPRING_DATASOURCE_URL
-              value: jdbc:postgresql://postgres:5432/ecommerce_db
-            - name: SPRING_DATASOURCE_USERNAME
-              value: nikhilagrawal
-            - name: SPRING_DATASOURCE_PASSWORD
-              value: postgres
           ports:
             - containerPort: 8080
 ---
