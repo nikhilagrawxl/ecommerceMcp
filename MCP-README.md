@@ -21,11 +21,27 @@ A Model Context Protocol (MCP) server implementation in Java using Spring Boot f
 - `addItem`: Add product to an order
 - `checkout`: Calculate order total
 
-## Running the Server
+## Running the Server (stdio)
 
 ```bash
 mvn clean package -DskipTests
 java -jar target/ecommerce-0.0.1-SNAPSHOT.jar
+```
+
+## Running the Server (HTTP)
+
+Disable stdio and expose HTTP JSON-RPC:
+
+```bash
+MCP_STDIO_ENABLED=false java -jar target/ecommerce-0.0.1-SNAPSHOT.jar
+```
+
+Send JSON-RPC via HTTP:
+
+```bash
+curl -sS -X POST http://localhost:8080/mcp \
+  -H 'Content-Type: application/json' \
+  -d '{"jsonrpc":"2.0","id":1,"method":"initialize","params":{}}'
 ```
 
 ## Testing

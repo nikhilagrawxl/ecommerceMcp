@@ -1,0 +1,41 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: ecommerce-mcp
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: ecommerce-mcp
+  template:
+    metadata:
+      labels:
+        app: ecommerce-mcp
+    spec:
+      containers:
+        - name: ecommerce-mcp
+          image: ecommerce-mcp:local
+          imagePullPolicy: IfNotPresent
+          env:
+            - name: MCP_STDIO_ENABLED
+              value: "false"
+            - name: SPRING_DATASOURCE_URL
+              value: jdbc:postgresql://postgres:5432/ecommerce_db
+            - name: SPRING_DATASOURCE_USERNAME
+              value: nikhilagrawal
+            - name: SPRING_DATASOURCE_PASSWORD
+              value: postgres
+          ports:
+            - containerPort: 8080
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: ecommerce-mcp
+spec:
+  selector:
+    app: ecommerce-mcp
+  ports:
+    - port: 8080
+      targetPort: 8080
+  type: ClusterIP

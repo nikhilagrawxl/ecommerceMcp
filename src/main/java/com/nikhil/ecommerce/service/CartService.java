@@ -12,11 +12,12 @@ import com.nikhil.ecommerce.repository.CartRepository;
 import com.nikhil.ecommerce.repository.OrderRepository;
 import com.nikhil.ecommerce.repository.ProductRepository;
 import com.nikhil.ecommerce.repository.UserRepository;
-import lombok.var;
 import org.springframework.stereotype.Service;
 
 import javax.transaction.Transactional;
+import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Service
 @Transactional
@@ -76,14 +77,14 @@ public class CartService {
         Cart cart = cartRepository.findByBuyer_UserId(buyerId)
                 .orElseThrow(() -> new NotFoundException("Cart not found"));
 
-        var itemDTOs = cart.getItems().stream()
+        List<CartItemResponseDTO> itemDTOs = cart.getItems().stream()
                 .map(i -> new CartItemResponseDTO(
                         i.getProduct().getProductId(),
                         i.getProduct().getName(),
                         i.getQuantity(),
                         i.getProduct().getPrice()
                 ))
-                .toList();
+                .collect(Collectors.toList());
 
         double total = itemDTOs.stream()
                 .mapToDouble(CartItemResponseDTO::getTotalPrice)
